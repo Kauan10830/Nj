@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Simples</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #333;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            background-color: #000;
+        }
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: white;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+<div id="gameOver">Game Over!</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const largura = window.innerWidth;
+    const altura = window.innerHeight;
+    canvas.width = largura;
+    canvas.height = altura;
+
+    const plataformaAltura = 20;
+    const plataformaLargura = 150;
+    let plataformaX = (canvas.width - plataformaLargura) / 2;
+
+    const bolaRadius = 15;
+    let bolaX = canvas.width / 2;
+    let bolaY = canvas.height - 30;
+    let bolaDX = 3;  // Velocidade horizontal da bola
+    let bolaDY = -3; // Velocidade vertical da bola
+
+    let setaDireitaPressionada = false;
+    let setaEsquerdaPressionada = false;
+
+    // Detecta teclas pressionadas
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+    function keyDownHandler(e) {
+        if (e.key === "ArrowRight") {
+            setaDireitaPressionada = true;
+        } else if (e.key === "ArrowLeft") {
+            setaEsquerdaPressionada = true;
+        }
+    }
+
+    function keyUpHandler(e) {
+        if (e.key === "ArrowRight") {
+            setaDireitaPressionada = false;
+        } else if (e.key === "ArrowLeft") {
+            setaEsquerdaPressionada = false;
+        }
+    }
+
+    function desenharPlataforma() {
+        ctx.beginPath();
+        ctx.rect(plataformaX, canvas.height - plataformaAltura, plataformaLargura, plataformaAltura);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function desenharBola() {
+        ctx.beginPath();
+        ctx.arc(bolaX, bolaY, bolaRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#FF4500";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function detectarColisoes() {
+        // Verifica colisão com as paredes laterais
+        if (bolaX + bolaDX > canvas.width - bolaRadius || bolaX + bolaDX < bolaRadius) {
+            bolaDX = -bolaDX;
+        }
+
+        // Verifica colisão com o topo da tela
+        if (bolaY + bolaDY < bolaRadius) {
+            bolaDY = -bolaDY;
+        }
+        // Verifica colisão com a plataforma
+        else if (bolaY + bolaDY > canvas.height - bolaRadius - plataformaAltura) {
+            if (bolaX > plataformaX && bolaX < plataformaX + plataformaLargura) {
+                bolaDY = -bolaDY; // A bola quica na plataforma
+            } else {
+                document.getElementById("gameOver").style.display = "block";
+                clearInterval(intervalo); // Para o jogo
+            }
+        }
+    }
+
+    function moverPlataforma() {
+        if (setaDireitaPressionada && plataformaX < canvas.width - plataformaLargura) {
+            plataformaX += 7;
+        } else if (setaEsquerdaPressionada && plataformaX > 0) {
+            plataformaX -= 7;
+        }
+    }
+
+    function atualizar() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        desenharBola();
+        desenharPlataforma();
+
+        detectarColisoes();
+        moverPlataforma();
+
+        bolaX += bolaDX;
+        bolaY += bolaDY;
+    }
+
+    const intervalo = setInterval(atualizar, 10);
+</script>
+
+</body>
+</html>
